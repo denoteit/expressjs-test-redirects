@@ -1,28 +1,18 @@
 var express = require('express');
 var router = express.Router();
-const { http, https } = require('follow-redirects');
+var followUrl = require('../helpers/follow-url')
 
 router.get('/', function(req, res, next) {
   res.json({'api':'api is working!'});
 });
 
-router.post('/follow-url', function(req, res, next) {
-  let url = req.body.url
-
-  http.get(url, response => {
-      console.log(response.responseUrl);
-
-      res.json(
-      {
-        'result':
-          {
-            'statusCode': response.headers.statusCode,
-            'url': response.responseUrl
-          }
-      });
-    }).on('error', err => {
-      console.error(err);
-    })
+router.post('/follow-url', async (req, res, next) => {
+  try {
+    const trace = await followUrl(req.body.url)
+    res.json(trace)
+  } catch (e) {
+    next(e)
+  }
 });
 
 module.exports = router;
